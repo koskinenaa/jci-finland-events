@@ -1,0 +1,12 @@
+{
+    "name": "koskinenaa/jci-finland-events",
+    "description": "Imports events from the JCI Finland intranet to a WordPress site.",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "Antti Koskinen",
+            "email": "antti.koskinen@jci.fi"
+        }
+    ],
+    "require": {}
+}
