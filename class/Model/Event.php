@@ -9,6 +9,9 @@ class Event
 
 	protected $attributes = array(
 		'id',
+		'event_id',
+		// 'post_id',
+		'thumbnail_id',
 		'title',
 		'description',
 		'location',
@@ -36,8 +39,8 @@ class Event
 		'end_time',
 	);
 
-	public function __construct(stdClass $data, string $dateFormat, string $timeFormat) {
-		$this->mapAttributes($data, $dateFormat, $timeFormat);
+	public function __construct(stdClass $data, stdClass $formats) {
+		$this->mapAttributes($data, $formats);
 	}
 
 	public function start()
@@ -67,7 +70,7 @@ class Event
 		return $this->end_date || $this->end_time;
 	}
 
-	protected function mapAttributes(stdClass $data, string $dateFormat, string $timeFormat) {
+	protected function mapAttributes(stdClass $data, stdClass $formats) {
 		$dates = array_flip($this->dates);
 		$times = array_flip($this->times);
 
@@ -77,9 +80,9 @@ class Event
 			if ( $value ) {
 				// TODO: avoid using non-class functions i.e. wp_date
 				if ( isset( $dates[$attribute] ) ) {
-					$value = wp_date( $dateFormat, strtotime( $value ) );
+					$value = wp_date( $formats->date, strtotime( $value ) );
 				} else if ( isset( $times[$attribute] ) ) {
-					$value = wp_date( $timeFormat, strtotime( $value ) );
+					$value = wp_date( $formats->time, strtotime( $value ) );
 				}
 			}
 
