@@ -2,6 +2,8 @@
 
 namespace JCI\Finland\Events;
 
+use stdClass;
+
 /**
   * Api\Request
   */
@@ -30,8 +32,9 @@ function class_events_repository() {
 	$config->db = $wpdb;
 	$config->table = db_table_name($wpdb->prefix);
 	$config->model = Model\Event::class;
-	$config->dateFormat = get_option('date_format');
-	$config->timeFormat = get_option('time_format');
+	$config->formats = new stdClass;
+	$config->formats->date = get_option('date_format');
+	$config->formats->time = get_option('time_format');
 
 	return new Repository\Events($config);
 }
@@ -39,4 +42,8 @@ function class_events_repository() {
 function insert_api_events(array $events) {
 	$repository = class_events_repository();
 	$insert = $repository->insertMany($events);
+}
+
+function clear_events() {
+	class_events_repository()->clearEvents();
 }
