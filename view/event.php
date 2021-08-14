@@ -4,7 +4,7 @@ namespace JCI\Finland\Events;
 do_action('jcifi_event_before', $data['event']);
 
 ?>
-<article class="<?php event_classes($data['event']); ?>">
+<article id="<?php event_id($data['event']); ?>" class="<?php event_classes($data['event']); ?>">
 
 	<?php do_action('jcifi_event_top', $data['event']); ?>
 

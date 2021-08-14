@@ -40,16 +40,36 @@ function event_get_classes( Model\Event $event ) {
 		$classes[] = 'region-' . $event->region_id;
 	}
 
-	echo esc_attr(
+	return esc_attr(
 		apply_filters(
 			'jcifi_event_classes',
-			implode(' ', $classes)
+			implode(' ', $classes),
+			$event,
+			$classes
 		)
 	);
 }
 
 function event_classes( Model\Event $event ) {
 	echo event_get_classes( $event );
+}
+
+/**
+  * Event id
+  */
+
+function event_get_id( Model\Event $event ) {
+	return esc_attr(
+		apply_filters(
+			'jcifi_event_id',
+			'event-' . $event->event_id,
+			$event
+		)
+	);
+}
+
+function event_id( Model\Event $event ) {
+	echo event_get_id($event);
 }
 
 /**
