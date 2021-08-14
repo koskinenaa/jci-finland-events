@@ -16,8 +16,16 @@ class Events
 
 	public function all()
 	{
+		return $this->selectQuery();
+	}
+
+	public function selectQuery( array $args = array() )
+	{
+		$args = $this->queryArgs($args);
+		$args['base'] = "SELECT * FROM {$this->config->table}";
+
 		$query = $this->config->db->get_results(
-			"SELECT * FROM {$this->config->table}",
+			$this->buildQueryString($args),
 			OBJECT
 		);
 
@@ -47,32 +55,29 @@ class Events
 		}
 
 		/**
-		  * Clear previous events to use latest event data
-		  */
-		$this->clearEvents();
-
-		/**
 		  * Prepare insert values
 		  */
 		$properties = $this->mapProperties(array());
-		$propertyKeys = implode(
-			', ',
-			array_map(
-				function($key) {
-					return '`' . $key . '`';
-				},
-				array_keys($properties)
-			)
-		);
+		$propertyKeys = $duplicateMap = array();
+
+		foreach ($properties as $key => $value) {
+			$propertyKeys[] = '`' . $key . '`';
+			$duplicateMap[] = '`' . $key . '`' . ' = VALUES(`' . $key . '`)';
+		}
+
+		$propertyKeys = implode(', ', $propertyKeys);
+		$duplicateMap = implode(', ', $duplicateMap);
 
 		/**
 		  * Prepare insert rows
 		  */
-		$rows = array();
-		foreach ($events as $event) {
-			$rows[] = $this->prepareInsertRow($event);
-		}
-		$rows = implode(', ', $rows);
+		$rows = implode(
+			', ',
+			array_map(
+				array($this, 'prepareInsertRow'),
+				$events
+			)
+		);
 
 		/**
 		  * Insert events
@@ -83,6 +88,8 @@ class Events
 				({$propertyKeys})
 				VALUES
 				{$rows}
+				ON DUPLICATE KEY UPDATE
+				{$duplicateMap}
 			"
 		);
 	}
@@ -92,6 +99,54 @@ class Events
 		return $this->config->db->query(
 			"TRUNCATE TABLE {$this->config->table}"
 		);
+	}
+
+	protected function buildQueryString( array $args = array() )
+	{
+		$sql = array(
+			'base' => '',
+			'where' => '',
+			'limit' => '',
+			'offset' => '',
+		);
+
+		foreach ($args as $key => $value) {
+			if ( null === $value ) {
+				continue;
+			}
+
+			switch ($key) {
+				case 'base':
+					$sql[$key] = $value;
+					break;
+
+				case 'limit':
+				case 'offset':
+					$sql[$key] = strtoupper($key) . ' ' . absint($value);
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		return implode(' ', $sql);
+	}
+
+	protected function queryArgs( array $args = array() )
+	{
+		$defaults = array(
+			'limit' => null,
+			'offset' => null,
+		);
+
+		foreach ($defaults as $key => $value) {
+			if ( isset($args[$key]) && null !== $args[$key] ) {
+				$defaults[$key] = $args[$key];
+			}
+		}
+
+		return $defaults;
 	}
 
 	protected function prepareInsertRow( array $data )
@@ -170,13 +225,29 @@ class Events
 		$start = $properties['EventDate'] ?? '';
 		$end = $properties['EndDate'] ?? '';
 
+		$eventUrl = $properties['Link'] ?? null;
+		$eventId = 0;
+		if ( $eventUrl ) {
+			$parsedEventUrl = parse_url($eventUrl, PHP_URL_QUERY);
+			if ( $parsedEventUrl ) {
+				parse_str($parsedEventUrl, $eventUrlParts);
+				if (
+					! empty($eventUrlParts['ID']) &&
+					is_numeric($eventUrlParts['ID'])
+				) {
+					$eventId = intval($eventUrlParts['ID']);
+				}
+			}
+		}
+
 		return array(
+			'event_id' => $eventId,
 			'title' => $properties['Title'] ?? null,
 			'description' => $properties['Description'] ?? null,
 			'location' => $properties['Location'] ?? null,
 			'geolocation' => $properties['GeoLocation'] ?? null,
 			'banner_url' => $properties['BannerURL'] ?? null,
-			'link_url' => $properties['Link'] ?? null,
+			'link_url' => $eventUrl,
 			'internal' => $properties['Internal'] ?? 0,
 			'start_date' => $start ? date('Y-m-d', strtotime($start)) : null,
 			'start_time' => $start ? date('H:i:s', strtotime($start)) : null,
@@ -194,8 +265,7 @@ class Events
 		$model = $this->config->model;
 		return new $model(
 			$data,
-			$this->config->dateFormat,
-			$this->config->timeFormat
+			$this->config->formats
 		);
 	}
 }
