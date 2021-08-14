@@ -7,6 +7,5 @@ class EventsConfig
 	public $db;
 	public $table;
 	public $model;
-	public $dateFormat;
-	public $timeFormat;
+	public $formats;
 }
