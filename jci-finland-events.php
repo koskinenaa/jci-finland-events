@@ -1,7 +1,7 @@
 <?php
 /**
   * Plugin Name: JCI Finland Events
-  * Version: 0.0.1
+  * Version: 0.0.2
   * Description: Imports events from the JCI Finland intranet to a WordPress site.
   * Author: Antti Koskinen
   * Text Domain: jcifi
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
-define( __NAMESPACE__ . '\\PLUGIN_VERSION', '0.0.1' );
+define( __NAMESPACE__ . '\\PLUGIN_VERSION', '0.0.2' );
 define( __NAMESPACE__ . '\\PLUGIN_SLUG', 'jcifi_events' );
 define( __NAMESPACE__ . '\\PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( __NAMESPACE__ . '\\PLUGIN_URL', plugin_dir_url( __FILE__ ) );
