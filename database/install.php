@@ -10,6 +10,9 @@ function db_install() {
 
 	$sql = "CREATE TABLE $table_name (
 		id INT NOT NULL AUTO_INCREMENT,
+		event_id INT NOT NULL,
+		post_id INT NULL,
+		thumbnail_id INT NULL,
 		title TEXT,
 		description LONGTEXT NULL,
 		location TEXT NULL,
@@ -26,9 +29,12 @@ function db_install() {
 		region VARCHAR(255) NULL,
 		region_id INT NULL,
 		PRIMARY KEY (id),
+		UNIQUE (event_id),
 		INDEX INTERNAL_INDEX (internal),
 		INDEX ORGANIZATION_ID_INDEX (organization_id),
-		INDEX REGION_ID_INDEX (region_id)
+		INDEX REGION_ID_INDEX (region_id),
+		INDEX EVENT_ID_INDEX (event_id),
+		INDEX POST_ID_INDEX (post_id)
 	) $charset_collate;";
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
