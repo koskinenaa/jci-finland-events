@@ -32,6 +32,7 @@ function populate_database() {
 
 function recreate_database($old_value, $value, $option_name) {
 	if ( $old_value !== $value ) {
+		clear_events();
 		insert_api_events(
 			fetch_api_events()
 		);
