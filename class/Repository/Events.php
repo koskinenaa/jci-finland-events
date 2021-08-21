@@ -19,24 +19,24 @@ class Events
 		return $this->selectQuery();
 	}
 
-	public function selectQuery( array $args = array() )
+	public function event( int $id )
 	{
-		$args = $this->queryArgs($args);
-		$args['base'] = "SELECT * FROM {$this->config->table}";
+		if ( ! $id ) {
+			return;
+		}
 
-		$query = $this->config->db->get_results(
-			$this->buildQueryString($args),
-			OBJECT
+		$args = $this->queryArgs(array());
+		$args['base'] = "SELECT * FROM {$this->config->table} WHERE `id` = {$id}";
+
+		$query = $this->queryResult(
+			'select',
+			$this->config->db->get_results(
+				$this->buildQueryString($args),
+				OBJECT
+			)
 		);
 
-		if ( is_array($query) ) {
-			return array_map(
-				array($this, 'newEvent'),
-				$query
-			);
-		} else {
-			return array();
-		}
+		return $query->items ? $query->items[0] : null;
 	}
 
 	public function count()
@@ -45,6 +45,21 @@ class Events
 			$this->config->db->get_var(
 				"SELECT COUNT('id') FROM {$this->config->table}"
 			)
+		);
+	}
+
+	public function selectQuery( array $args = array() )
+	{
+		$args = $this->queryArgs($args);
+		$args['base'] = "SELECT * FROM {$this->config->table}";
+
+		return $this->queryResult(
+			'select',
+			$this->config->db->get_results(
+				$this->buildQueryString($args),
+				OBJECT
+			),
+			$this->count()
 		);
 	}
 
@@ -99,6 +114,23 @@ class Events
 		return $this->config->db->query(
 			"TRUNCATE TABLE {$this->config->table}"
 		);
+	}
+
+	protected function queryResult( string $type, $items = null, $total = null )
+	{
+		$result = new stdClass;
+		$result->type = $type;
+		$result->total = $total;
+		$result->items = array();
+
+		if ( $items && is_array($items) ) {
+			$result->items = array_map(
+				array($this, 'newEvent'),
+				$items
+			);
+		}
+
+		return $result;
 	}
 
 	protected function buildQueryString( array $args = array() )

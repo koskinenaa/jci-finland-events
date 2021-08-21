@@ -7,10 +7,10 @@ function shortcode_name() {
 }
 
 function register_shortcode($atts = array(), $content = null) {
-	$repository = class_events_repository();
+	$query = class_events_repository()->all();
 	$events = apply_filters(
 		'jcifi_events',
-		$repository->all()
+		$query->items
 	);
 
 	ob_start();
