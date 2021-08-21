@@ -36,13 +36,13 @@ function clear_settings() {
 }
 
 function options_page() {
-	add_menu_page(
-		__('JCI Finland Events', 'jcifi'),
-		__('JCI Finland Events', 'jcifi'),
+	add_submenu_page(
+		events_list_page_slug(),
+		__('Settings', 'jcifi'),
+		__('Settings', 'jcifi'),
 		options_page_capability_requirement(),
 		settings_page_slug(),
 		__NAMESPACE__ . '\\render_options_page',
-		'dashicons-calendar-alt',
 		null
 	);
 }
@@ -55,7 +55,7 @@ function options_page_capability_requirement() {
 }
 
 function settings_page_slug() {
-	return 'jci-finland-events';
+	return 'jci-finland-events-settings';
 }
 
 function settings_group() {
@@ -106,13 +106,9 @@ function register_settings() {
 }
 
 function render_options_page() {
-	$repository = class_events_repository();
 	view(
 		'settings',
-		array(
-			'event_count' => $repository->count(),
-			'events_fetched' => events_fetched(),
-		),
+		array(),
 		true
 	);
 }

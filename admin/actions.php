@@ -12,6 +12,16 @@ function settings_page_url( string $result = '' ) {
 	);
 }
 
+function events_page_url( string $result = '' ) {
+	return add_query_arg(
+		array(
+			'page' => events_list_page_slug(),
+			'result' => $result,
+		),
+		admin_url()
+	);
+}
+
 function populate_database() {
 	if (
 		check_admin_referer(
@@ -25,7 +35,7 @@ function populate_database() {
 	}
 
 	wp_redirect(
-		settings_page_url()
+		events_page_url()
 	);
 	die;
 }
