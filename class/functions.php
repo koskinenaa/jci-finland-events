@@ -47,3 +47,12 @@ function insert_api_events(array $events) {
 function clear_events() {
 	class_events_repository()->clearEvents();
 }
+
+/**
+  * Admin\EventsList
+  */
+function events_list_table() {
+	return new Admin\EventListTable(
+		class_events_repository()
+	);
+}
