@@ -1,7 +1,7 @@
 <?php
 /**
   * Plugin Name: JCI Finland Events
-  * Version: 0.0.2
+  * Version: 0.0.3
   * Description: Imports events from the JCI Finland intranet to a WordPress site.
   * Author: Antti Koskinen
   * Text Domain: jcifi
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
 
-define( __NAMESPACE__ . '\\PLUGIN_VERSION', '0.0.2' );
+define( __NAMESPACE__ . '\\PLUGIN_VERSION', '0.0.3' );
 define( __NAMESPACE__ . '\\PLUGIN_SLUG', 'jcifi_events' );
 define( __NAMESPACE__ . '\\PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 define( __NAMESPACE__ . '\\PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -36,6 +36,24 @@ function activation() {
 		db_install();
 		db_save_version_option();
 	}
+
+	/**
+	  * Setup cron
+	  */
+	load_file('inc/cron', true, true);
+	load_file('class/functions', true, true);
+	cron_activate();
+}
+
+/**
+  * Plugin deactivation
+  */
+register_deactivation_hook( __FILE__, __NAMESPACE__ . '\\deactivation' );
+function deactivation() {
+	/**
+	  * Clear cron
+	  */
+	cron_deactivate();
 }
 
 /**
@@ -52,6 +70,11 @@ function uninstall() {
 	  * Clear general settings
 	  */
 	clear_settings();
+
+	/**
+	  * Clear cron
+	  */
+	cron_deactivate();
 }
 
 /**
@@ -95,8 +118,15 @@ function init() {
 	}
 
 	/**
-	  * Settings
+	  * Cron
 	  */
+	add_action( cron_hook(), __NAMESPACE__ . '\\cron_action', 10 );
+
+	/**
+	  * Menu pages
+	  */
+	add_filter('set-screen-option', __NAMESPACE__ . '\\events_list_table_set_option', 10, 3);
+	add_action('admin_menu', __NAMESPACE__ . '\\events_list_page');
 	add_action('admin_menu', __NAMESPACE__ . '\\options_page');
 	add_action('admin_init', __NAMESPACE__ . '\\register_settings');
 
@@ -168,12 +198,14 @@ function plugin_files() {
 	return array(
 		'database/functions',
 		'database/settings',
+		'inc/cron',
 		'inc/helpers',
 		'inc/shortcode',
 		'inc/template-functions',
 		'inc/template-actions',
 		'admin/actions',
 		'admin/settings',
+		'admin/events-list',
 		'class/functions',
 	);
 }
